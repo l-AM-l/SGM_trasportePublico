@@ -1,0 +1,11 @@
+# Ionic
+node_modules/
+platforms/
+plugins/
+www/
+dist/
+.DS_Store
+*.tmp
+*.sass-cache
+npm-debug.log
+.env

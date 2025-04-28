@@ -1,0 +1,13 @@
+# Android
+build/
+.gradle/
+/local.properties
+/.idea/caches/
+/.idea/libraries/
+/.idea/modules.xml
+/.idea/workspace.xml
+*.iml
+*.hprof
+.cxx/
+.DS_Store
+/app/release/
