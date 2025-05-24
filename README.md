@@ -26,6 +26,7 @@ Sistema compuesto por tres aplicaciones para la gestión de boletos electrónico
   - Gestión de claves
 
 ### Permisos
+```json
 {
   "rules": {
   	"usuarios": {
@@ -40,3 +41,4 @@ Sistema compuesto por tres aplicaciones para la gestión de boletos electrónico
     }
  		 }
 }
+```
