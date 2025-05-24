@@ -67,7 +67,7 @@ export default {
 <style scoped>
 /* Estilo para las letras del Tab */
 ion-tab-button ion-label {
-  color: black !important;
+  color: rgb(215, 215, 215) !important;
   font-weight: bold;
   font-size: 16px;
 }

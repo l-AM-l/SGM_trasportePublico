@@ -1,33 +1,33 @@
 <template>
   <ion-page>
     <ion-content :fullscreen="true" class="background">
-      <!-- Círculos decorativos -->
+     
       <div class="circle circle-1"></div>
       <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
-      <div class="circle circle-4"></div>
-      <div class="circle circle-5"></div>
-      <div class="circle circle-6"></div>
+      
 
-      <!-- Contenedor centrado -->
       <div class="container">
         <div class="form-container">
           <h1>Agregar Claves</h1>
           <ion-list class="custom-list">
             <ion-item>
-              <ion-label position="stacked">Estatus</ion-label>
-              <ion-input v-model="estatus" placeholder="Ej: activa" />
+              <ion-label position="stacked">Cantidad de claves (opcional)</ion-label>
+              <ion-input 
+                v-model="cantidad" 
+                type="number" 
+                placeholder=""
+              />
             </ion-item>
 
             <ion-button expand="block" class="custom-button" @click="agregarClave">
-              Agregar Clave
+              Generar Clave(s)
             </ion-button>
           </ion-list>
 
           <ion-alert
             :is-open="alerta"
-            header="¡Éxito!"
-            message="La clave fue registrada automáticamente"
+            :header="mensajeExito.header"
+            :message="mensajeExito.message"
             :buttons="['Aceptar']"
             @didDismiss="alerta = false"
           />
@@ -48,7 +48,6 @@ import {
   IonButton,
   IonAlert
 } from '@ionic/vue';
-
 import { ref, push, set, child, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import { db } from '../router/firebase';
@@ -67,8 +66,12 @@ export default {
   },
   data() {
     return {
-      estatus: '',
-      alerta: false
+      cantidad: null, 
+      alerta: false,
+      mensajeExito: {
+        header: '',
+        message: ''
+      }
     };
   },
   methods: {
@@ -76,31 +79,65 @@ export default {
       try {
         const auth = getAuth();
         const usuarioActual = auth.currentUser;
-        if (!usuarioActual) {
-          throw new Error("No hay usuario logueado");
-        }
+        if (!usuarioActual) throw new Error("No hay usuario logueado");
 
         const uid = usuarioActual.uid;
         const usuarioSnap = await get(child(ref(db), `usuarios/${uid}`));
         const nombre = usuarioSnap.exists() ? usuarioSnap.val().nombre : 'Desconocido';
 
-        const clavesRef = ref(db, 'claves');
-        const nuevaClaveRef = push(clavesRef);
-        await set(nuevaClaveRef, {
-          estatus: this.estatus,
-          usuario: nombre
-        });
+       
+        const totalClaves = this.cantidad ? parseInt(this.cantidad) : 1;
 
-        this.estatus = '';
-        this.alerta = true;
+        
+        if (totalClaves <= 0) {
+          this.mostrarAlerta("Error", "La cantidad debe ser mayor a 0");
+          return;
+        }
+
+        // Generar todas las claves
+        for (let i = 0; i < totalClaves; i++) {
+          const valorQR = this.generarValorAleatorio(10);
+          const clavesRef = ref(db, 'claves');
+          const nuevaClaveRef = push(clavesRef);
+          await set(nuevaClaveRef, {
+            status: "QR sin generar",
+            qr: valorQR,
+            usuario: nombre,
+            
+          });
+        }
+
+        
+        this.mostrarAlerta(
+          "¡Éxito!", 
+          totalClaves === 1 
+            ? "1 clave generada correctamente" 
+            : `${totalClaves} claves generadas correctamente`
+        );
+        
+        this.cantidad = null; 
+
       } catch (error) {
-        console.error('Error al agregar clave:', error);
+        console.error('Error al agregar clave(s):', error);
+        this.mostrarAlerta("Error", "Ocurrió un error al generar las claves");
       }
+    },
+    //generacion de claves QR
+    generarValorAleatorio(longitud) {
+      const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let resultado = '';
+      for (let i = 0; i < longitud; i++) {
+        resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      }
+      return resultado;
+    },
+    mostrarAlerta(header, message) {
+      this.mensajeExito = { header, message };
+      this.alerta = true;
     }
   }
 };
 </script>
-
 <style scoped>
 .background {
   --background: #ffffff;
@@ -160,6 +197,7 @@ h1 {
   opacity: 0.4;
   z-index: 0;
 }
+
 .circle-1 {
   top: -60px;
   left: -60px;
@@ -167,6 +205,7 @@ h1 {
   height: 160px;
   background-color: #04d2f6;
 }
+
 .circle-2 {
   top: 30px;
   right: -60px;
@@ -174,6 +213,7 @@ h1 {
   height: 130px;
   background-color: #0ad77a;
 }
+
 .circle-3 {
   bottom: -40px;
   left: -40px;
@@ -181,6 +221,7 @@ h1 {
   height: 200px;
   background-color: #149dce;
 }
+
 .circle-4 {
   bottom: 0;
   right: -30px;
@@ -188,6 +229,7 @@ h1 {
   height: 120px;
   background-color: #7e2bc7;
 }
+
 .circle-5 {
   top: 200px;
   right: 30px;
@@ -195,6 +237,7 @@ h1 {
   height: 100px;
   background-color: #ffcb6b;
 }
+
 .circle-6 {
   bottom: 60px;
   left: 80px;

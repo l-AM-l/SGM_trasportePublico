@@ -12,7 +12,12 @@
       <!-- CONTENEDOR FLEX PARA CENTRAR -->
       <div class="center-wrapper">
         <div class="table-container">
-          <h1>Lista de Claves</h1>
+          <div class="header-section">
+            <h1>Lista de Claves</h1>
+            <ion-button class="borrar-todas-button" color="danger" @click="confirmarBorrado">
+              Borrar Todas
+            </ion-button>
+          </div>
           <ion-grid>
             <ion-row class="header-row">
               <ion-col>Clave</ion-col>
@@ -21,8 +26,8 @@
               <ion-col>Acciones</ion-col>
             </ion-row>
             <ion-row v-for="(item, index) in listaClaves" :key="index">
-              <ion-col>{{ listaKeys[index] }}</ion-col>
-              <ion-col>{{ item.estatus }}</ion-col>
+              <ion-col>{{ item.qr }}</ion-col>
+              <ion-col>{{ item.status }}</ion-col>
               <ion-col>{{ item.usuario }}</ion-col>
               <ion-col>
                 <ion-button class="eliminar-button" color="danger" size="small" @click="borrarClave(listaKeys[index])">
@@ -44,7 +49,8 @@ import {
   IonCol,
   IonGrid,
   IonRow,
-  IonButton
+  IonButton,
+  alertController
 } from '@ionic/vue';
 import { ref, onMounted } from 'vue';
 import { db } from '../router/firebase.js';
@@ -83,6 +89,51 @@ export default {
       await remove(claveRef);
     };
 
+    const borrarTodasLasClaves = async () => {
+      try {
+        const clavesRef = dbRef(db, 'claves/');
+        await remove(clavesRef);
+      } catch (error) {
+        console.error('Error al borrar todas las claves:', error);
+        throw error;
+      }
+    };
+
+    const confirmarBorrado = async () => {
+      const alert = await alertController.create({
+        header: 'Confirmar',
+        message: '¿Estás seguro que deseas borrar TODAS las claves? Esta acción no se puede deshacer.',
+        buttons: [
+          {
+            text: 'Cancelar',
+            role: 'cancel'
+          },
+          {
+            text: 'Borrar Todo',
+            handler: async () => {
+              try {
+                await borrarTodasLasClaves();
+                mostrarAlerta('Éxito', 'Todas las claves han sido eliminadas');
+              } catch (error) {
+                mostrarAlerta('Error', 'No se pudieron borrar todas las claves');
+              }
+            }
+          }
+        ]
+      });
+
+      await alert.present();
+    };
+
+    const mostrarAlerta = async (header, message) => {
+      const alert = await alertController.create({
+        header,
+        message,
+        buttons: ['OK']
+      });
+      await alert.present();
+    };
+
     onMounted(() => {
       cargarClaves();
     });
@@ -90,7 +141,8 @@ export default {
     return {
       listaClaves,
       listaKeys,
-      borrarClave
+      borrarClave,
+      confirmarBorrado
     };
   }
 };
@@ -134,15 +186,33 @@ export default {
   font-size: 18px;
 }
 
-/* TITULO */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
 h1 {
   font-size: 28px;
   font-weight: bold;
-  margin-bottom: 30px;
   color: #000;
+  margin: 0;
 }
 
-/* ENCABEZADO */
+
+.borrar-todas-button {
+  font-size: 15px;
+  padding: 10px 14px;
+  --background: #d32f2f;
+  --color: white;
+  --border-radius: 12px;
+  text-transform: uppercase;
+  font-weight: bold;
+  margin-left: 20px;
+}
+
+
 .header-row ion-col {
   background-color: #be3455;
   font-weight: bold;
