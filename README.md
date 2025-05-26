@@ -24,6 +24,8 @@ Sistema compuesto por tres aplicaciones para la gestión de boletos electrónico
   - Panel de administración
   - Monitoreo en tiempo real
   - Gestión de claves
+  ### web ionic 
+  https://sgmtransporte-9bb14.web.app
 
 ### Permisos
 ```json
